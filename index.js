@@ -1,7 +1,7 @@
 'use strict';
 
 const escodegen = require('escodegen');
-const libxmljs = require('libxmljs');
+const xmlParser = require('xml-parser');
 const svgPropertyConfig = require('react/lib/SVGDOMPropertyConfig');
 const domFactories = require('react/lib/ReactDOMFactories');
 
@@ -72,19 +72,17 @@ function attrsDeclaration(attrs) {
 
 function element(node, propsWrapper) {
   const attrs = {};
-  node.attrs().forEach(attr => {
-    const name = attr.name();
+  Object.keys(node.attributes).forEach(name => {
     if (allowedAttrs[name]) {
-      attrs[allowedAttrs[name]] = attr.value();
+      attrs[allowedAttrs[name]] = node.attributes[name];
     }
   });
   let props = attrsDeclaration(attrs);
   if (propsWrapper) {
     props = propsWrapper(props);
   }
-  const children = node.childNodes()
-    .filter(child => child.type() === 'element')
-    .filter(child => allowedTags.indexOf(child.name()) !== -1)
+  const children = node.children
+    .filter(child => allowedTags.indexOf(child.name) !== -1)
     .map(child => element(child));
   return {
     type: 'CallExpression',
@@ -102,7 +100,7 @@ function element(node, propsWrapper) {
     },
     arguments: [{
       type: 'Literal',
-      value: node.name()
+      value: node.name
     }, props].concat(children)
   };
 }
@@ -154,8 +152,8 @@ function component(node) {
 }
 
 function componentExport(source) {
-  const doc = libxmljs.parseXml(source);
-  const root = doc.root();
+  const doc = xmlParser(source);
+  const root = doc.root;
   return {
     type: 'ExpressionStatement',
     expression: {

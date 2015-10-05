@@ -1,6 +1,6 @@
 {
   "name": "react-icon-loader",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "load svg icons as react components",
   "main": "index.js",
   "scripts": {},
@@ -14,7 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "escodegen": "^1.7.0",
-    "libxmljs": "^0.14.3"
+    "xml-parser": "^1.2.1"
   },
   "peerDependencies": {
     "react": ">=0.14.0-rc1"
