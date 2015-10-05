@@ -13,7 +13,9 @@ converted to
     var React = require('react');
 
     module.exports = function(props) {
-      return React.createElement('svg', Object.assign({}, { version: '1.1', viewBox: '0 0 16 16' }, props),
+      return React.createElement(
+        'svg',
+        Object.assign({}, { version: '1.1', viewBox: '0 0 16 16' }, props),
         React.createElement('path', { d: 'M8 0c-2.454 0-4.486 1.791-4.906 ...' })
       );
     }
