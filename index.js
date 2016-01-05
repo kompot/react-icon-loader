@@ -39,6 +39,29 @@ const importReact = {
   }]
 };
 
+const importAssign = {
+  type: 'VariableDeclaration',
+  kind: 'var',
+  declarations: [{
+    type: 'VariableDeclarator',
+    id: {
+      type: 'Identifier',
+      name: 'objectAssign'
+    },
+    init: {
+      type: 'CallExpression',
+      callee: {
+        type: 'Identifier',
+        name: 'require'
+      },
+      arguments: [{
+        type: 'Literal',
+        value: 'object-assign'
+      }]
+    }
+  }]
+};
+
 function attrsDeclaration(attrs) {
   if (!Object.keys(attrs).length) {
     return {
@@ -109,16 +132,8 @@ function assignPropsWrapper(props) {
   return {
     type: 'CallExpression',
     callee: {
-      type: 'MemberExpression',
-      computed: false,
-      object: {
-        type: 'Identifier',
-        name: 'Object'
-      },
-      property: {
-        type: 'Identifier',
-        name: 'assign'
-      }
+      type: 'Identifier',
+      name: 'objectAssign'
     },
     arguments: [{
       type: 'ObjectExpression',
@@ -179,13 +194,15 @@ function componentExport(source) {
 function esTree(source) {
   return {
     type: 'Program',
-    body: [importReact, componentExport(source)]
+    body: [importReact, importAssign, componentExport(source)]
   };
 }
 
-function iconicLoader(source) {
-  this.cacheable();
+function iconLoader(source) {
+  if (this.cacheable) {
+    this.cacheable();
+  }
   return escodegen.generate(esTree(source));
 }
 
-module.exports = iconicLoader;
+module.exports = iconLoader;
