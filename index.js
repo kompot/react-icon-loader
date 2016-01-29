@@ -3,18 +3,31 @@
 const escodegen = require('escodegen');
 const xmlParser = require('xml-parser');
 const svgPropertyConfig = require('react/lib/SVGDOMPropertyConfig');
+const htmlPropertyConfig = require('react/lib/HTMLDOMPropertyConfig');
 const domFactories = require('react/lib/ReactDOMFactories');
 
 const allowedTags = Object.keys(domFactories);
 const allowedAttrs = {};
 
+Object.keys(htmlPropertyConfig.DOMAttributeNames).forEach(reactName => {
+  allowedAttrs[svgPropertyConfig.DOMAttributeNames[reactName]] = reactName;
+});
+
 Object.keys(svgPropertyConfig.DOMAttributeNames).forEach(reactName => {
   allowedAttrs[svgPropertyConfig.DOMAttributeNames[reactName]] = reactName;
+});
+
+Object.keys(htmlPropertyConfig.Properties).forEach(name => {
+  allowedAttrs[name] = name;
 });
 
 Object.keys(svgPropertyConfig.Properties).forEach(name => {
   allowedAttrs[name] = name;
 });
+
+const restrictedAttrs = {
+  svg: ['width', 'height', 'id']
+};
 
 const importReact = {
   type: 'VariableDeclaration',
@@ -96,7 +109,7 @@ function attrsDeclaration(attrs) {
 function element(node, propsWrapper) {
   const attrs = {};
   Object.keys(node.attributes).forEach(name => {
-    if (allowedAttrs[name]) {
+    if (allowedAttrs[name] && (!restrictedAttrs[node.name] || restrictedAttrs[node.name].indexOf(name) === -1)) {
       attrs[allowedAttrs[name]] = node.attributes[name];
     }
   });
