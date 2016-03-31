@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('path');
+const css = require('css');
 const escodegen = require('escodegen');
 const xmlParser = require('xml-parser');
 const svgPropertyConfig = require('react/lib/SVGDOMPropertyConfig');
@@ -29,51 +31,72 @@ const restrictedAttrs = {
   svg: ['width', 'height', 'id']
 };
 
-const importReact = {
-  type: 'VariableDeclaration',
-  kind: 'var',
-  declarations: [{
-    type: 'VariableDeclarator',
-    id: {
+function importExpr(id, path, es6) {
+  const requireExpr = {
+    type: 'CallExpression',
+    callee: {
       type: 'Identifier',
-      name: 'React'
+      name: 'require'
     },
-    init: {
-      type: 'CallExpression',
-      callee: {
-        type: 'Identifier',
-        name: 'require'
-      },
-      arguments: [{
+    arguments: [
+      {
         type: 'Literal',
-        value: 'react'
-      }]
-    }
-  }]
-};
+        value: path
+      }
+    ]
+  };
+  return {
+    type: 'VariableDeclaration',
+    kind: 'var',
+    declarations: [
+      {
+        type: 'VariableDeclarator',
+        id: {
+          type: 'Identifier',
+          name: id
+        },
+        init: es6 ? {
+          type: 'MemberExpression',
+          computed: false,
+          object: requireExpr,
+          property: {
+            type: 'Identifier',
+            name: 'default'
+          }
+        } : requireExpr
+      }
+    ]
+  };
+}
 
-const importAssign = {
-  type: 'VariableDeclaration',
-  kind: 'var',
-  declarations: [{
-    type: 'VariableDeclarator',
-    id: {
-      type: 'Identifier',
-      name: 'objectAssign'
-    },
-    init: {
-      type: 'CallExpression',
-      callee: {
-        type: 'Identifier',
-        name: 'require'
-      },
-      arguments: [{
+function literalValue(value) {
+  return {
+    type: 'Literal',
+    value: value
+  };
+}
+
+function styleValue(value) {
+  const declarations = css.parse('*{' + value + '}').stylesheet.rules[0].declarations;
+  return {
+    type: 'ObjectExpression',
+    properties: declarations.map(declaration => ({
+      type: 'Property',
+      key: {
         type: 'Literal',
-        value: 'object-assign'
-      }]
-    }
-  }]
-};
+        value: declaration.property
+      },
+      value: {
+        type: 'Literal',
+        value: declaration.value
+      },
+      computed: false,
+      kind: 'init',
+      method: false,
+      shorthand: false
+    }))
+  };
+}
 
 function attrsDeclaration(attrs) {
   if (!Object.keys(attrs).length) {
@@ -93,10 +116,7 @@ function attrsDeclaration(attrs) {
         type: 'Identifier',
         name: name
       },
-      value: {
-        type: 'Literal',
-        value: attrs[name]
-      },
+      value: name === 'style' ? styleValue(attrs[name]) : literalValue(attrs[name]),
       computed: false,
       kind: 'init',
       method: false,
@@ -134,10 +154,12 @@ function element(node, propsWrapper) {
         name: 'createElement'
       }
     },
-    arguments: [{
-      type: 'Literal',
-      value: node.name
-    }, props].concat(children)
+    arguments: [
+      {
+        type: 'Literal',
+        value: node.name
+      }, props
+    ].concat(children)
   };
 }
 
@@ -148,13 +170,12 @@ function assignPropsWrapper(props) {
       type: 'Identifier',
       name: 'objectAssign'
     },
-    arguments: [{
-      type: 'ObjectExpression',
-      properties: []
-    }, props, {
-      type: 'Identifier',
-      name: 'props'
-    }]
+    arguments: [
+      props, {
+        type: 'Identifier',
+        name: 'props'
+      }
+    ]
   };
 }
 
@@ -162,24 +183,28 @@ function component(node) {
   return {
     type: 'FunctionExpression',
     id: null,
-    params: [{
-      type: 'Identifier',
-      name: 'props'
-    }],
+    params: [
+      {
+        type: 'Identifier',
+        name: 'props'
+      }
+    ],
     defaults: [],
     body: {
       type: 'BlockStatement',
-      body: [{
-        type: 'ReturnStatement',
-        argument: element(node, assignPropsWrapper)
-      }]
+      body: [
+        {
+          type: 'ReturnStatement',
+          argument: element(node, assignPropsWrapper)
+        }
+      ]
     },
     generator: false,
     expression: false
   };
 }
 
-function componentExport(source) {
+function componentExport(source, filename) {
   const doc = xmlParser(source);
   const root = doc.root;
   return {
@@ -199,15 +224,52 @@ function componentExport(source) {
           name: 'exports'
         }
       },
-      right: component(root)
+
+      right: {
+        type: 'CallExpression',
+        callee: {
+          type: 'CallExpression',
+          callee: {
+            type: 'Identifier',
+            name: 'compose'
+          },
+          arguments: [
+            {
+              type: 'CallExpression',
+              callee: {
+                type: 'Identifier',
+                name: 'setDisplayName'
+              },
+              arguments: [
+                {
+                  type: 'Literal',
+                  value: 'react-icon(' + filename + ')'
+                }
+              ]
+            },
+            {
+              type: 'Identifier',
+              name: 'pure'
+            }
+          ]
+        },
+        arguments: [component(root)]
+      }
     }
   };
 }
 
-function esTree(source) {
+function esTree(source, filename) {
   return {
     type: 'Program',
-    body: [importReact, importAssign, componentExport(source)]
+    body: [
+      importExpr('React', 'react'),
+      importExpr('objectAssign', 'object-assign'),
+      importExpr('compose', 'recompose/compose', true),
+      importExpr('pure', 'recompose/pure', true),
+      importExpr('setDisplayName', 'recompose/setDisplayName', true),
+      componentExport(source, filename)
+    ]
   };
 }
 
@@ -215,7 +277,7 @@ function iconLoader(source) {
   if (this.cacheable) {
     this.cacheable();
   }
-  return escodegen.generate(esTree(source));
+  return escodegen.generate(esTree(source, path.basename(this.resourcePath)));
 }
 
 module.exports = iconLoader;
