@@ -1,5 +1,6 @@
 'use strict';
 
+const _ = require('lodash');
 const path = require('path');
 const css = require('css');
 const escodegen = require('escodegen');
@@ -84,7 +85,7 @@ function styleValue(value) {
       type: 'Property',
       key: {
         type: 'Literal',
-        value: declaration.property
+        value: _.camelCase(declaration.property)
       },
       value: {
         type: 'Literal',
