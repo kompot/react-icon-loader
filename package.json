@@ -1,6 +1,6 @@
 {
   "name": "react-icon-loader",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "load svg icons as react components",
   "main": "index.js",
   "scripts": {

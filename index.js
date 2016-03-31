@@ -100,7 +100,7 @@ function styleValue(value) {
 function attrValue(name, value) {
   if (name === 'style') {
     return styleValue(value);
-  } else if (name === 'd') {
+  } else if (name === 'd' || name === 'points') {
     return pathValue(value);
   }
   return literalValue(value);
