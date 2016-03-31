@@ -77,26 +77,33 @@ function literalValue(value) {
   };
 }
 
+function pathValue(value) {
+  return literalValue(value.replace(/\s+/g, ' '));
+}
+
 function styleValue(value) {
   const declarations = css.parse('*{' + value + '}').stylesheet.rules[0].declarations;
   return {
     type: 'ObjectExpression',
     properties: declarations.map(declaration => ({
       type: 'Property',
-      key: {
-        type: 'Literal',
-        value: _.camelCase(declaration.property)
-      },
-      value: {
-        type: 'Literal',
-        value: declaration.value
-      },
+      key: literalValue(_.camelCase(declaration.property)),
+      value: literalValue(declaration.value),
       computed: false,
       kind: 'init',
       method: false,
       shorthand: false
     }))
   };
+}
+
+function attrValue(name, value) {
+  if (name === 'style') {
+    return styleValue(value);
+  } else if (name === 'd') {
+    return pathValue(value);
+  }
+  return literalValue(value);
 }
 
 function attrsDeclaration(attrs) {
@@ -117,7 +124,7 @@ function attrsDeclaration(attrs) {
         type: 'Identifier',
         name: name
       },
-      value: name === 'style' ? styleValue(attrs[name]) : literalValue(attrs[name]),
+      value: attrValue(name, attrs[name]),
       computed: false,
       kind: 'init',
       method: false,

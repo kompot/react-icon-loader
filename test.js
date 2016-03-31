@@ -8,7 +8,7 @@ const context = {
   resourcePath: '/foo/bar/foobar.svg'
 };
 
-const src = '<svg version="1.2"><line style="stroke-width:2;"></line><rect width="100" style="fill:red;"></rect></svg>';
+const src = '<svg version="1.2"><line style="stroke-width:2;" d="a b c"></line><rect width="100" style="fill:red;"></rect></svg>';
 
 const js = loader.call(context, src);
 
