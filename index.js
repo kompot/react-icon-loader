@@ -236,32 +236,25 @@ function componentExport(source, filename) {
       right: {
         type: 'CallExpression',
         callee: {
-          type: 'CallExpression',
-          callee: {
-            type: 'Identifier',
-            name: 'compose'
+          type: 'Identifier',
+          name: 'setDisplayName'
+        },
+        arguments: [
+          {
+            type: 'Literal',
+            value: 'react-icon(' + filename + ')'
           },
-          arguments: [
-            {
-              type: 'CallExpression',
-              callee: {
-                type: 'Identifier',
-                name: 'setDisplayName'
-              },
-              arguments: [
-                {
-                  type: 'Literal',
-                  value: 'react-icon(' + filename + ')'
-                }
-              ]
-            },
-            {
+          {
+            type: 'CallExpression',
+            callee: {
               type: 'Identifier',
               name: 'pure'
-            }
-          ]
-        },
-        arguments: [component(root)]
+            },
+            arguments: [
+              component(root)
+            ]
+          }
+        ]
       }
     }
   };
@@ -273,7 +266,6 @@ function esTree(source, filename) {
     body: [
       importExpr('React', 'react'),
       importExpr('objectAssign', 'object-assign'),
-      importExpr('compose', 'recompose/compose', true),
       importExpr('pure', 'recompose/pure', true),
       importExpr('setDisplayName', 'recompose/setDisplayName', true),
       componentExport(source, filename)

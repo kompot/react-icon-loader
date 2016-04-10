@@ -1,6 +1,6 @@
 {
   "name": "react-icon-loader",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "load svg icons as react components",
   "main": "index.js",
   "scripts": {
@@ -22,15 +22,18 @@
     "xml-parser": "^1.2.1"
   },
   "peerDependencies": {
-    "react": "^0.14.0",
-    "object-assign": "^4.0.0",
-    "recompose": "^0.15.1"
+    "react": ">=0.14.0",
+    "object-assign": ">=4.0.0",
+    "recompose": ">=0.16.0"
   },
   "devDependencies": {
-    "object-assign": "^4.0.0",
-    "react": "^0.14.0",
-    "react-dom": "^0.14.8",
-    "recompose": "^0.15.1"
+    "glob": "^7.0.3",
+    "material-design-icons": "^2.1.1",
+    "object-assign": ">=4.0.0",
+    "react": ">=0.14.0",
+    "react-dom": ">=0.14.0",
+    "recompose": ">=0.16.0",
+    "svgo": "^0.6.4"
   },
   "keywords": [
     "webpack",
