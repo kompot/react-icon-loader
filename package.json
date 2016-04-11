@@ -22,7 +22,7 @@
     "xml-parser": "^1.2.1"
   },
   "peerDependencies": {
-    "react": ">=0.14.0",
+    "react": ">=0.14.0 || >= 15.0.0",
     "object-assign": ">=4.0.0",
     "recompose": ">=0.16.0"
   },
